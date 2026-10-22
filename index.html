@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robux Prank Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap">
+<style>
+/* Layout: one dark phone-width panel, one step per screen. Black game-site look: near-black page, charcoal cards, white type, bright blue actions. Single deliberate dark look. */
+:root{
+  color-scheme: dark;
+  --page:#0f1012;
+  --panel:#191a1d;
+  --card:#232527;
+  --card-2:#2d2f33;
+  --line:#393b3d;
+  --ink:#ffffff;
+  --muted:#a2a5ab;
+  --blue:#335fff;
+  --blue-2:#5c80ff;
+  --green:#00b06f;
+  --gold:#f5b301;
+  --font:"Montserrat", "Gotham", "Segoe UI", system-ui, sans-serif;
+}
+html,body{height:100%}
+body{
+  margin:0;background:var(--page);color:var(--ink);font-family:var(--font);
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:16px;box-sizing:border-box;
+  display:grid;place-items:center;overflow-x:hidden;
+}
+.phone{
+  position:relative;width:100%;max-width:400px;min-height:min(720px,100%);
+  border-radius:16px;overflow:hidden;
+  background:radial-gradient(120% 50% at 50% 0%, #1f2330 0%, transparent 70%), var(--panel);
+  box-shadow:0 30px 80px -30px #000, 0 0 0 1px var(--line);
+  display:flex;flex-direction:column;
+}
+.bar{height:4px;background:#2a2c30}
+.bar i{display:block;height:100%;width:0;background:var(--blue);box-shadow:0 0 12px var(--blue);transition:width .45s ease}
+.top{height:44px;display:flex;align-items:center;padding:16px 18px 0}
+.back{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:18px;cursor:pointer}
+.back:hover{background:var(--card-2)}
+.back[hidden]{display:none}
+.screens{flex:1;position:relative}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 24px 28px;gap:12px;opacity:0;pointer-events:none;transform:translateX(24px);transition:opacity .3s, transform .3s}
+.screen.on{opacity:1;pointer-events:auto;transform:none}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:13px}
+.chip .coin{width:16px;height:16px;object-fit:contain;}
+h1{font-weight:800;font-size:32px;line-height:1.1;margin:6px 0 0;letter-spacing:-.01em;color:var(--ink);text-wrap:balance}
+.sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0}
+.grow{flex:1}
+.btn{width:100%;border:0;border-radius:8px;padding:15px 20px;font:700 16px var(--font);cursor:pointer;transition:transform .12s, opacity .2s, background .15s}
+.btn:active{transform:scale(.98)}
+.btn.dark{background:var(--blue);color:#fff}
+.btn.dark:hover:not(:disabled){background:var(--blue-2)}
+.btn.grad{background:var(--blue);color:#fff;box-shadow:0 10px 26px -10px var(--blue)}
+.btn.grad:hover:not(:disabled){background:var(--blue-2)}
+#again{background:#fff;color:#111}
+#again:hover{background:#e6e6e6}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.back:focus-visible,.target:focus-visible,input:focus-visible,.range:focus-visible,.paste:focus-visible{outline:3px solid var(--blue-2);outline-offset:3px}
+
+/* 0: prank opener */
+#s0{justify-content:center;gap:18px}
+.prank{margin:0;font-weight:900;font-size:clamp(54px,17vw,78px);line-height:.92;letter-spacing:-.02em;color:#fff;
+  text-shadow:0 0 30px #335fff99, 0 6px 0 var(--blue);
+  transform:rotate(-4deg);animation:wob 1.6s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(3deg) scale(1.05)}}
+.note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:500;line-height:1.5;color:#d6d7da;max-width:300px}
+
+/* 1: select target */
+#s1{justify-content:center;padding-bottom:120px}
+.target{width:96px;height:96px;border-radius:14px;border:2px solid var(--blue);background:var(--card);display:grid;place-items:center;cursor:pointer;margin-top:22px;box-shadow:0 0 0 6px #335fff22, 0 0 30px -6px var(--blue);transition:transform .15s}
+.target:hover{transform:scale(1.05)}
+.target .coin{width:54px;height:54px;object-fit:contain;}
+
+/* 2: volume */
+.big{font-weight:900;font-size:64px;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums;margin:56px 0 30px;min-height:80px}
+.range{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:9px;background:linear-gradient(var(--blue),var(--blue)) 0/var(--p,0%) 100% no-repeat,#33363b;outline:none}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 0 0 7px #335fff33;cursor:pointer}
+.range::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 0 0 7px #335fff33;cursor:pointer}
+/* slider effects */
+#s2 .big{margin:46px 0 0;transition:filter .2s, color .2s}
+#s2 .big.bump{animation:bump .22s ease-out}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.big.hot{color:var(--gold);filter:drop-shadow(0 0 16px #f5b30188)}
+.tier{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 26px;padding:5px 12px;border-radius:6px;background:var(--card);border:1px solid var(--line);transition:background .25s,color .25s,border-color .25s}
+.tier.t1{color:#3ddc97;border-color:#1f6b4b;background:#12291f}
+.tier.t2{color:#7d9bff;border-color:#2c3f86;background:#141d3a}
+.tier.t3{color:#c38bff;border-color:#5a3590;background:#24173a}
+.tier.t4{color:#1a1200;background:var(--gold);border-color:var(--gold);box-shadow:0 0 22px -4px var(--gold)}
+.slider{position:relative;width:100%}
+.range{transition:box-shadow .2s}
+.range.drag{box-shadow:0 0 18px #335fffaa}
+.range::-webkit-slider-thumb{transition:transform .15s, box-shadow .15s}
+.range.drag::-webkit-slider-thumb{transform:scale(1.25);box-shadow:0 0 0 10px #335fff44, 0 0 24px var(--blue)}
+.range.drag::-moz-range-thumb{transform:scale(1.25);box-shadow:0 0 0 10px #335fff44, 0 0 24px var(--blue)}
+.spark{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;pointer-events:none;animation:spark .8s ease-out forwards}
+.spark svg{width:100%;height:100%}
+@keyframes spark{from{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(var(--r))}}
+.burst{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:3px solid var(--gold);pointer-events:none;animation:burst .6s ease-out forwards}
+@keyframes burst{to{transform:scale(7);opacity:0}}
+
+/* 3: identity */
+#s3{padding-top:30px}
+.ring{width:80px;height:80px;border-radius:14px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;box-shadow:0 0 30px -10px var(--blue)}
+.ring svg{width:42px;height:42px}
+.ring svg *{stroke:var(--blue-2)}
+.routing{font-size:12px;font-weight:600;color:var(--muted);margin:-4px 0 6px}
+.routing b{color:var(--gold);font-weight:800}
+.field{width:100%;display:flex;align-items:center;gap:8px;background:#111214;border-radius:8px;padding:4px 6px 4px 14px;border:1px solid var(--line);box-sizing:border-box;transition:border-color .15s}
+.field:focus-within{border-color:var(--blue)}
+.field span{color:var(--muted);font-weight:700}
+.field input{flex:1;min-width:0;border:0;outline:none;font:600 16px var(--font);padding:12px 0;background:transparent;color:var(--ink)}
+.field input::placeholder{color:#6d7076}
+.paste{flex:none;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:6px;padding:8px 11px;background:var(--card-2);color:#fff;font:700 13px var(--font);cursor:pointer}
+.paste:hover{background:#3a3d42}
+.hint{font-size:11px;font-weight:500;color:var(--muted);margin:0}
+.hint.warn{color:var(--gold)}
+#s3 .btn{margin-top:6px}
+
+/* 4: counter */
+#s4{justify-content:center;padding-bottom:90px;gap:10px}
+.avatar{width:92px;height:92px;border-radius:50%;background:linear-gradient(#3a3d42,#26282c);display:grid;place-items:center;border:3px solid var(--line);box-shadow:0 0 30px -10px var(--blue);padding:0;cursor:pointer;transition:transform .15s}
+.avatar:active{transform:scale(.95)}
+.avatar .profile{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.handle{font-weight:800;font-size:20px;margin:4px 0 0}
+.badge{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--line);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px}
+.badge .coin{width:14px;height:14px;object-fit:contain;}
+.count{font-weight:900;font-size:44px;letter-spacing:-.01em;color:#fff;font-variant-numeric:tabular-nums;margin:14px 0 0}
+.caption{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="bar"><i id="bar"></i></div>
+  <div class="top"><button class="back" id="back" aria-label="Back" hidden>&#8592;</button></div>
+
+  <div class="screens">
+    <!-- 0: Prank opener -->
+    <section class="screen on" id="s0">
+      <p class="prank">IT'S A<br>PRANK!</p>
+      <div class="note">This "free Robux generator" is fake. Nobody gets Robux and nothing you type is saved.</div>
+      <div style="width:100%;max-width:300px"><button class="btn grad" id="go">Start &rarr;</button></div>
+    </section>
+
+    <!-- 1: Select Target -->
+    <section class="screen" id="s1">
+      <h1>Select Target</h1>
+      <p class="sub">Choose your reward<br>platform</p>
+      <button class="target" id="pick" aria-label="Robux"><img src="https://i.ibb.co/0jfr46Lh/Robux-2019-Logo-gold-svg.webp" class="coin" alt="R$"></button>
+    </section>
+
+    <!-- 2: Configure Volume -->
+    <section class="screen" id="s2">
+      <span class="chip"><img src="https://i.ibb.co/0jfr46Lh/Robux-2019-Logo-gold-svg.webp" class="coin" alt="R$">Robux</span>
+      <h1>Configure<br>Volume</h1>
+      <p class="sub">Target Robux amount</p>
+      <div class="big" id="amt">0</div>
+      <div class="tier" id="tier">Drag the slider</div>
+      <div class="slider" id="slider"><input class="range" id="rng" type="range" min="0" max="100" value="0" aria-label="Robux amount"></div>
+      <div class="grow"></div>
+      <button class="btn dark" id="cont2" disabled>Continue &rarr;</button>
+    </section>
+
+    <!-- 3: Set Identity -->
+    <section class="screen" id="s3">
+      <div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="#5b3df5" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M6.5 18.5c1.4-2.3 3.3-3.2 5.5-3.2s4.1.9 5.5 3.2"/></svg></div>
+      <h1 style="font-size:26px">Set Identity</h1>
+      <p class="routing">Routing <b id="routeAmt">0</b> Robux to</p>
+      <div class="field"><span>@</span><input id="user" placeholder="username" maxlength="20" autocomplete="off" spellcheck="false" aria-label="Username"><button type="button" class="paste" id="paste"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V2.5h6V4"/></svg>Paste</button></div>
+      <p class="hint" id="pasteHint">Type a username or paste it from your clipboard.</p>
+      <button class="btn grad" id="init" disabled>Initialize &#9889;</button>
+    </section>
+
+    <!-- 4: Delivery counter -->
+    <section class="screen" id="s4">
+      <div class="avatar"><img src="https://i.ibb.co/ZzL9VsDr/Screenshot-2026-10-22-140552.png" class="profile" alt="User"></div>
+      <p class="handle" id="handle">@player</p>
+      <span class="badge"><img src="https://i.ibb.co/0jfr46Lh/Robux-2019-Logo-gold-svg.webp" class="coin" alt="R$">Robux</span>
+      <div class="count" id="count">0</div>
+      <p class="caption">Robux being delivered</p>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const screens = [...document.querySelectorAll('.screen')];
+  const progress = [0, 15, 35, 60, 85, 100];
+  let cur = 0, amount = 0, timer = null;
+  const fmt = n => n >= 1e6 ? (n/1e6).toFixed(n%1e6 ? 1 : 0).replace('.0','')+'M' : n >= 1e3 ? (n/1e3).toFixed(n%1e3 ? 1 : 0).replace('.0','')+'K' : String(n);
+
+  function show(i){
+    screens.forEach((s,k)=>s.classList.toggle('on',k===i));
+    cur = i;
+    $('#bar').style.width = progress[i] + '%';
+    $('#back').hidden = !(i >= 1 && i <= 3);
+    if(i===3) setTimeout(()=>$('#user').focus(),300);
+  }
+
+  $('#go').onclick = () => show(1);
+  $('#back').onclick = () => show(cur-1);
+  $('#pick').onclick = () => show(2);
+  $('#cont2').onclick = () => show(3);
+
+  const rng = $('#rng');
+  rng.oninput = () => {
+    const v = +rng.value;
+    amount = v === 0 ? 0 : (Math.round(Math.pow(v/100, 2) * 5e6 / 1000) * 1000 || 1000);
+    $('#amt').textContent = fmt(amount);
+    $('#routeAmt').textContent = fmt(amount);
+    rng.style.setProperty('--p', v + '%');
+    $('#cont2').disabled = amount === 0;
+    effects(v);
+  };
+
+  // slider effects: number bump, tier badge, coin sparks, glow
+  const amtEl = $('#amt'), tierEl = $('#tier'), slider = $('#slider');
+  const tiers = [[0,'Drag the slider',''],[1,'Starter','t1'],[30,'Pro','t2'],[60,'Epic','t3'],[85,'Legendary','t4']];
+  let lastTier = 0, lastSpark = 0;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function effects(v){
+    let ti = 0; tiers.forEach((t,i)=>{ if(v >= t[0]) ti = i; });
+    tierEl.textContent = tiers[ti][1]; tierEl.className = 'tier ' + tiers[ti][2];
+    amtEl.classList.toggle('hot', v >= 60);
+    if(reduce) { lastTier = ti; return; }
+    amtEl.classList.remove('bump'); void amtEl.offsetWidth; amtEl.classList.add('bump');
+    const x = 15 + (rng.offsetWidth - 30) * v / 100;
+    if(ti > lastTier && ti > 1){
+      const b = document.createElement('i'); b.className = 'burst'; b.style.left = x + 'px';
+      slider.appendChild(b); setTimeout(()=>b.remove(), 650);
+      try { navigator.vibrate && navigator.vibrate(15); } catch(e) {}
+    }
+    lastTier = ti;
+    const now = performance.now();
+    if(v > 0 && now - lastSpark > 45){
+      lastSpark = now;
+      const n = v >= 60 ? 2 : 1;
+      for(let k=0;k<n;k++){
+        const s = document.createElement('span'); s.className = 'spark';
+        s.innerHTML = '<img src="https://i.ibb.co/0jfr46Lh/Robux-2019-Logo-gold-svg.webp" style="width:100%;height:100%;object-fit:contain">';
+        s.style.left = x + 'px';
+        s.style.setProperty('--dx', (Math.random()*60 - 30) + 'px');
+        s.style.setProperty('--dy', (-40 - Math.random()*50) + 'px');
+        s.style.setProperty('--r', (Math.random()*360 - 180) + 'deg');
+        slider.appendChild(s); setTimeout(()=>s.remove(), 850);
+      }
+    }
+  }
+  ['pointerdown','touchstart'].forEach(ev => rng.addEventListener(ev, () => rng.classList.add('drag'), {passive:true}));
+  ['pointerup','pointercancel','touchend','blur'].forEach(ev => rng.addEventListener(ev, () => rng.classList.remove('drag')));
+
+  const user = $('#user'), hint = $('#pasteHint');
+  const clean = s => s.trim().replace(/^@/, '').replace(/[^A-Za-z0-9_]/g,'').slice(0,20);
+  user.oninput = () => { user.value = clean(user.value); $('#init').disabled = user.value.length < 3; };
+  const setUser = s => { user.value = clean(s); user.oninput(); hint.classList.remove('warn'); hint.textContent = 'Pasted!'; };
+  user.addEventListener('paste', e => {
+    const t = (e.clipboardData || window.clipboardData)?.getData('text');
+    if(t != null){ e.preventDefault(); setUser(t); }
+  });
+  
+  $('#paste').onclick = async () => {
+    let t = null;
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        t = await navigator.clipboard.readText();
+      }
+      if (!t) throw new Error('empty or unavailable');
+    } catch (err) {
+      // Fallback if clipboard API is blocked by iframe/permissions
+      t = prompt('Clipboard access is restricted by the browser. Please paste your username here:', '');
+    }
+    
+    if (t) {
+      setUser(t);
+    } else {
+      user.focus();
+    }
+  };
+  
+  user.onkeydown = e => { if(e.key==='Enter' && !$('#init').disabled) $('#init').click(); };
+
+  $('#init').onclick = () => {
+    $('#handle').textContent = '@' + user.value;
+    show(4);
+    const start = performance.now(), dur = 1800, target = amount;
+    const tick = now => {
+      const p = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      $('#count').textContent = Math.floor(e * target).toLocaleString('en-US');
+      if(p < 1) timer = requestAnimationFrame(tick);
+      else $('#bar').style.width = '100%';
+    };
+    timer = requestAnimationFrame(tick);
+  };
+
+  $('#s4 .avatar').onclick = () => {
+    cancelAnimationFrame(timer);
+    rng.value = 0;
+    rng.oninput();
+    user.value = '';
+    $('#init').disabled = true;
+    $('#count').textContent = '0';
+    show(0);
+  };
+
+})();
+</script>
+</body>
+</html>
